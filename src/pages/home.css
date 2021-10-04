@@ -1,0 +1,9 @@
+.home{
+	text-align: center;
+	flex-direction: column;
+
+}
+.list {
+	text-align: center;
+	flex-direction: row;
+}
