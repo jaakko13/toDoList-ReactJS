@@ -1,9 +1,16 @@
 .home{
 	text-align: center;
 	flex-direction: column;
+	display: flex;
 
 }
 .list {
 	text-align: center;
 	flex-direction: row;
+	border-width: 2px;
+	border-color: rgb(255, 145, 0);
+	border-style: solid;
+	background-color: rgb(255, 183, 89);
+	border-radius: 8px;
+	margin: 10px;
 }

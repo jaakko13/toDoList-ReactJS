@@ -5,6 +5,22 @@ import './home.css';
 function Home() {
 	const [todo, setTodo] = React.useState([])
 	const [current, setCurrent] = React.useState('')
+	const [edit, setEdit] = React.useState(null)
+	const [editText, setEditText] = React.useState('')
+
+	React.useEffect(() => {
+		const temp = localStorage.getItem("dataList")
+		const parsed = JSON.parse(temp)
+
+		if(parsed){
+			setTodo(parsed)
+		}
+	}, [])
+
+	React.useEffect(() => {
+		const data = JSON.stringify(todo)
+		localStorage.setItem("dataList", data)
+	}, [todo])
 
 	function handleSubmit(e) {
 		e.preventDefault() //Prevents refresh on submission
@@ -19,9 +35,49 @@ function Home() {
 		setCurrent('') //Reinitialize current to make sure no mix ups
 	}
 
-	function deleteItem(id){
+	function deleteItem(id) {
 		const updated = [...todo].filter((current) => current.id !== id)
 		setTodo(updated)
+	}
+
+	function toggleComplete(id) {
+		const updated = [...todo].map((current) => {
+			if (current.id === id) {
+				current.completed = !current.completed
+			}
+			return current
+		})
+
+		setTodo(updated)
+	}
+
+	function editItem(id) {
+		const updated = [...todo].map((current) => {
+			if (current.id === id) {
+				todo.text = editText
+			}
+			return todo
+		})
+		setTodo(updated)
+		setEdit(null)
+		setEditText('')
+	}
+
+	function inputWithButton(id) {
+		return (
+			<div>
+				<input type='text' onChange={(e) => setEditText(e.target.value)} value={editText} />
+				<button onClick={() => editItem(id)}>Confirm Edit</button>
+			</div>
+		);
+	}
+
+	function textWithEdit(id, text) {
+		return (
+			<div className="list">{text}
+				<button onClick={() => setEdit(id)}>Edit</button>
+			</div>
+		);
 	}
 
 	return (
@@ -31,11 +87,14 @@ function Home() {
 				<button type="submit">Add Item</button>
 			</form>
 
-			{todo.map((item) => <div className="list" key={item.id} >
-				<div>{item.text}</div>
+			{todo.map((item) => <div key={item.id} >
+
+				{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text))}
+
 				<button onClick={() => deleteItem(item.id)}>Delete</button>
+				<input type='checkbox' onChange={() => toggleComplete(item.id)} checked={item.completed} />
 			</div>)}
-		</div> 
+		</div>
 	)
 }
 
