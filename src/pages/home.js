@@ -7,8 +7,10 @@ function Home() {
 	const [current, setCurrent] = React.useState('')
 	const [edit, setEdit] = React.useState(null)
 	const [editText, setEditText] = React.useState('')
+	const [reorder, setReorder] = React.useState(null)
+	const [reorderNumber, setReorderNumber] = React.useState(null)
 
-	React.useEffect(() => {
+	React.useEffect(() => { //Used to load to do list from localStorage
 		const temp = localStorage.getItem("dataList")
 		const parsed = JSON.parse(temp)
 
@@ -17,8 +19,8 @@ function Home() {
 		}
 	}, [])
 
-	React.useEffect(() => {
-		const data = JSON.stringify(todo)
+	React.useEffect(() => { //Used to save to do list to localStorage
+		const data = JSON.stringify(todo) 
 		localStorage.setItem("dataList", data)
 	}, [todo])
 
@@ -52,15 +54,30 @@ function Home() {
 	}
 
 	function editItem(id) {
-		const updated = [...todo].map((current) => {
-			if (current.id === id) {
-				todo.text = editText
+		const updated = [...todo].map((item) => {
+			if (item.id === id) {
+				item.text = editText
 			}
-			return todo
+			return item
 		})
 		setTodo(updated)
 		setEdit(null)
 		setEditText('')
+	}
+
+	function reorderItem(id){
+		const updated = [...todo].map((item) => {
+			if (item.id === id) {
+				//todo.indexOf(item) = reorderNumber
+				const index = todo.indexOf(item)
+				//todo.splice(index, 1)
+				console.log('hi', index)
+			}
+			return item
+		})
+		setTodo(updated)
+		setReorder(null)
+		setReorderNumber(null)
 	}
 
 	function inputWithButton(id) {
@@ -80,6 +97,15 @@ function Home() {
 		);
 	}
 
+	function inputReorder(id) {
+		return (
+			<div>
+				<input type='number' onChange={(e) => setReorderNumber(e.target.value)} value={reorderNumber} />
+				<button onClick={() => reorderItem(id)}>Enter Index</button>
+			</div>
+		);
+	}
+
 	return (
 		<div className="home">
 			<form onSubmit={handleSubmit}>
@@ -90,9 +116,11 @@ function Home() {
 			{todo.map((item) => <div key={item.id} >
 
 				{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text))}
+				{reorder === item.id ? (inputReorder(item.id)) : (<button onClick={() => setReorder(item.id)}>Reorder</button>)}
 
 				<button onClick={() => deleteItem(item.id)}>Delete</button>
 				<input type='checkbox' onChange={() => toggleComplete(item.id)} checked={item.completed} />
+
 			</div>)}
 		</div>
 	)
