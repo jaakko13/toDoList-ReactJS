@@ -1,4 +1,3 @@
-import { render } from '@testing-library/react';
 import React from 'react'
 import './home.css';
 
@@ -23,14 +22,14 @@ function Home() {
 		}
 	}, [])
 
-	// React.useEffect(() => { //Used to load categories list from localStorage
-	// 	const temp = localStorage.getItem("categoryList")
-	// 	const parsed = JSON.parse(temp)
+	React.useEffect(() => { //Used to load categories list from localStorage
+		const temp = localStorage.getItem("categoryList")
+		const parsed = JSON.parse(temp)
 
-	// 	if (parsed) {
-	// 		setCategories(parsed)
-	// 	}
-	// }, [])
+		if (parsed) {
+			setCategories(parsed)
+		}
+	}, [])
 
 	React.useEffect(() => { //Used to save to do list to localStorage
 		const data = JSON.stringify(todo)
@@ -53,15 +52,27 @@ function Home() {
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
-		setCategories([...categories].concat(tag))
+		if(!categories.includes(newTodo.tag)){
+			setCategories([...categories].concat(tag))
+		}
 		setCurrent('') //Reinitialize current to make sure no mix ups
 		setTag('')
 	}
 
 	//function to delete items from list
-	function deleteItem(id) {
+	function deleteItem(id, tag) {
 		const updated = [...todo].filter((current) => current.id !== id)
+		const updatedCategory = [...categories].filter((current) => current !== tag) //Deletes category from list if there are no items with that category
+
+		updated.map((item) => {
+			if(item.tag !== tag){
+				updatedCategory.filter((current) => current !== tag)
+			}
+		})
+			
+		
 		setTodo(updated)
+		setCategories(updatedCategory)
 	}
 
 	//function to toggle the complete status of items
@@ -134,14 +145,21 @@ function Home() {
 		);
 	}
 
-	function handleSelectChange(e) {
+	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
+		
+		// const temp = value.length <= categories.length;
+		// if(temp){
+		// // item is removed 
+		// }
+		// var arr = value.map((item) => item.value);
+		// setCategories(arr);
 	}
 
 	function dropdown(e) {
 		return (
 			<div>
-				<select onChange={handleSelectChange}>
+				<select onChange={handleSelectChange} value={categories}>
 					<option value="Select a Category"> -- Select a category -- </option>
 					<option value="all">All</option>
 
@@ -167,7 +185,7 @@ function Home() {
 					{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
 					{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
-					<button onClick={() => deleteItem(filteredItem.id)}>Delete</button>
+					<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
 					<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
 
 				</div>
