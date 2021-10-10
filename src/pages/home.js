@@ -37,11 +37,13 @@ function Home() {
 		setCurrent('') //Reinitialize current to make sure no mix ups
 	}
 
+	//function to delete items from list
 	function deleteItem(id) {
 		const updated = [...todo].filter((current) => current.id !== id)
 		setTodo(updated)
 	}
 
+	//function to toggle the complete status of items
 	function toggleComplete(id) {
 		const updated = [...todo].map((current) => {
 			if (current.id === id) {
@@ -53,6 +55,7 @@ function Home() {
 		setTodo(updated)
 	}
 
+	//function to edit items in the list
 	function editItem(id) {
 		const updated = [...todo].map((item) => {
 			if (item.id === id) {
@@ -80,6 +83,7 @@ function Home() {
 		setReorderNumber(null)
 	}
 
+	//Conditional Rendering to show show change input field and confirm button only
 	function inputWithButton(id) {
 		return (
 			<div>
@@ -89,6 +93,7 @@ function Home() {
 		);
 	}
 
+	//Conditional Rendering to show show item text and edit button only
 	function textWithEdit(id, text) {
 		return (
 			<div className="list">{text}
