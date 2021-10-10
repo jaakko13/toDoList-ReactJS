@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 import React from 'react'
 import './home.css';
 
@@ -22,14 +23,14 @@ function Home() {
 		}
 	}, [])
 
-	React.useEffect(() => { //Used to load categories list from localStorage
-		const temp = localStorage.getItem("categoryList")
-		const parsed = JSON.parse(temp)
+	// React.useEffect(() => { //Used to load categories list from localStorage
+	// 	const temp = localStorage.getItem("categoryList")
+	// 	const parsed = JSON.parse(temp)
 
-		if (parsed) {
-			setCategories(parsed)
-		}
-	}, [])
+	// 	if (parsed) {
+	// 		setCategories(parsed)
+	// 	}
+	// }, [])
 
 	React.useEffect(() => { //Used to save to do list to localStorage
 		const data = JSON.stringify(todo)
@@ -133,7 +134,7 @@ function Home() {
 		);
 	}
 
-	function handleSelectChange(e){
+	function handleSelectChange(e) {
 		setDisplayTag(e.target.value)
 	}
 
@@ -143,7 +144,7 @@ function Home() {
 				<select onChange={handleSelectChange}>
 					<option value="Select a Category"> -- Select a category -- </option>
 					<option value="all">All</option>
-					
+
 					{categories.map((item) => <option value={item}>{item}</option>)}
 				</select>
 			</div>
@@ -160,19 +161,31 @@ function Home() {
 				<button type="submit">Add Item</button>
 			</form>
 
-			{todo.map((item) => <div key={item.id} >
+			{/* {todo.map((item) => <div key={item.id} > */}
+			{todo.filter(item => displayTag === 'all').map(filteredItem => (
+				<div key={filteredItem.id} >
+					{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+					{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
-				{/* {item.tag === displayTag} */}
+					<button onClick={() => deleteItem(filteredItem.id)}>Delete</button>
+					<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
 
-				{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text, item.tag))}
-				{reorder === item.id ? (inputReorder(item.id)) : (<button onClick={() => setReorder(item.id)}>Reorder</button>)}
+				</div>
+			))}
 
-				<button onClick={() => deleteItem(item.id)}>Delete</button>
-				<input type='checkbox' onChange={() => toggleComplete(item.id)} checked={item.completed} />
 
-			</div>)}
-		</div>
-	)
-}
+			{todo.filter(item => item.tag === displayTag).map(filteredItem => (
+				<div key={filteredItem.id} >
+					{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+					{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
-export default Home
+					<button onClick={() => deleteItem(filteredItem.id)}>Delete</button>
+					<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
+
+				</div>
+			))}
+		</div >
+	)}
+
+
+	export default Home
