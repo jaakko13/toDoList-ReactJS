@@ -65,16 +65,16 @@ function Home() {
 		setEditText('')
 	}
 
-	function reorderItem(id){
-		const updated = [...todo].map((item) => {
-			if (item.id === id) {
-				//todo.indexOf(item) = reorderNumber
-				const index = todo.indexOf(item)
-				//todo.splice(index, 1)
-				console.log('hi', index)
+	function reorderItem(id){ //Reorders item in array
+		const updated = [...todo] //create new array from todo
+	
+		updated.map((item)=> {
+			if (item.id === id) { //make sure correct item
+				updated.splice(reorderNumber, 0, updated.splice(updated.indexOf(item), 1)[0]) //at given index, remove none, and add given item
 			}
 			return item
 		})
+
 		setTodo(updated)
 		setReorder(null)
 		setReorderNumber(null)
