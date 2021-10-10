@@ -9,20 +9,37 @@ function Home() {
 	const [editText, setEditText] = React.useState('')
 	const [reorder, setReorder] = React.useState(null)
 	const [reorderNumber, setReorderNumber] = React.useState(null)
+	const [categories, setCategories] = React.useState([])
+	const [tag, setTag] = React.useState('')
+	const [displayTag, setDisplayTag] = React.useState('all')
 
 	React.useEffect(() => { //Used to load to do list from localStorage
 		const temp = localStorage.getItem("dataList")
 		const parsed = JSON.parse(temp)
 
-		if(parsed){
+		if (parsed) {
 			setTodo(parsed)
 		}
 	}, [])
 
+	React.useEffect(() => { //Used to load categories list from localStorage
+		const temp = localStorage.getItem("categoryList")
+		const parsed = JSON.parse(temp)
+
+		if (parsed) {
+			setCategories(parsed)
+		}
+	}, [])
+
 	React.useEffect(() => { //Used to save to do list to localStorage
-		const data = JSON.stringify(todo) 
+		const data = JSON.stringify(todo)
 		localStorage.setItem("dataList", data)
 	}, [todo])
+
+	React.useEffect(() => { //Used to save categories list to localStorage
+		const tags = JSON.stringify(categories)
+		localStorage.setItem("categoryList", tags)
+	}, [categories])
 
 	function handleSubmit(e) {
 		e.preventDefault() //Prevents refresh on submission
@@ -31,10 +48,13 @@ function Home() {
 			id: new Date().getTime(),
 			text: current,
 			completed: false,
+			tag: tag
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
+		setCategories([...categories].concat(tag))
 		setCurrent('') //Reinitialize current to make sure no mix ups
+		setTag('')
 	}
 
 	//function to delete items from list
@@ -68,10 +88,10 @@ function Home() {
 		setEditText('')
 	}
 
-	function reorderItem(id){ //Reorders item in array
+	function reorderItem(id) { //Reorders item in array
 		const updated = [...todo] //create new array from todo
-	
-		updated.map((item)=> {
+
+		updated.map((item) => {
 			if (item.id === id) { //make sure correct item
 				updated.splice(reorderNumber, 0, updated.splice(updated.indexOf(item), 1)[0]) //at given index, remove none, and add given item
 			}
@@ -94,10 +114,12 @@ function Home() {
 	}
 
 	//Conditional Rendering to show show item text and edit button only
-	function textWithEdit(id, text) {
+	function textWithEdit(id, text, tag) {
 		return (
-			<div className="list">{text}
+			<div className="list">
+				{text}
 				<button onClick={() => setEdit(id)}>Edit</button>
+				{'Tag: ' + tag}
 			</div>
 		);
 	}
@@ -111,16 +133,38 @@ function Home() {
 		);
 	}
 
+	function handleSelectChange(e){
+		setDisplayTag(e.target.value)
+	}
+
+	function dropdown(e) {
+		return (
+			<div>
+				<select onChange={handleSelectChange}>
+					<option value="Select a Category"> -- Select a category -- </option>
+					<option value="all">All</option>
+					
+					{categories.map((item) => <option value={item}>{item}</option>)}
+				</select>
+			</div>
+		)
+	}
+
 	return (
 		<div className="home">
+			{dropdown()}
 			<form onSubmit={handleSubmit}>
-				<input type="text" onChange={(e) => setCurrent(e.target.value)} value={current} />
+				<input type="text" onChange={(e) => setCurrent(e.target.value)} value={current} placeholder='Text' />
+				<input type="text" onChange={(e) => setTag(e.target.value)} value={tag} placeholder='Category' />
+
 				<button type="submit">Add Item</button>
 			</form>
 
 			{todo.map((item) => <div key={item.id} >
 
-				{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text))}
+				{/* {item.tag === displayTag} */}
+
+				{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text, item.tag))}
 				{reorder === item.id ? (inputReorder(item.id)) : (<button onClick={() => setReorder(item.id)}>Reorder</button>)}
 
 				<button onClick={() => deleteItem(item.id)}>Delete</button>
