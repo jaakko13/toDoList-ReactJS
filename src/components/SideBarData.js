@@ -14,4 +14,10 @@ export const SideBarData = [
 		icon: <FaIcons.FaInfoCircle />,
 		cName: 'nav-text'
 	},
+	{
+		title: 'Dev',
+		path: '/dev',
+		icon: <FaIcons.FaAnchor />,
+		cName: 'nav-text'
+	},
 ]
