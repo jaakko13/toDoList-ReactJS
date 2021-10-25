@@ -52,7 +52,7 @@ function Home() {
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
-		if(!categories.includes(newTodo.tag)){
+		if(!categories.includes(newTodo.tag)){ //Adds new categories to categories array and make sure no duplicates
 			setCategories([...categories].concat(tag))
 		}
 		setCurrent('') //Reinitialize current to make sure no mix ups
@@ -62,17 +62,24 @@ function Home() {
 	//function to delete items from list
 	function deleteItem(id, tag) {
 		const updated = [...todo].filter((current) => current.id !== id)
-		const updatedCategory = [...categories].filter((current) => current !== tag) //Deletes category from list if there are no items with that category
+		const tempUpdated = [...todo]
+		const updatedCategory = [...categories]//.filter((current) => current !== tag)//Deletes category from list if there are no items with that category
 
-		updated.map((item) => {
-			if(item.tag !== tag){
-				updatedCategory.filter((current) => current !== tag)
+		if(updated.length < 1){
+			const first = updatedCategory.filter((current) => current !== tag) //makes sure deletion of categories when less than 1 item. Had this bug for a while...
+			setCategories(first)
+		}
+		else{
+			updated.map((item) => { //deletes tag when there are no more items with said tag
+			if(tag !== item.tag){
+				console.log('item.tag')
+				const final = updatedCategory.filter((current) => current !== tag)
+				setCategories(final)		
 			}
+			return item
 		})
-			
-		
+		}
 		setTodo(updated)
-		setCategories(updatedCategory)
 	}
 
 	//function to toggle the complete status of items
@@ -148,6 +155,10 @@ function Home() {
 	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
 		
+
+
+
+
 		// const temp = value.length <= categories.length;
 		// if(temp){
 		// // item is removed 
@@ -159,7 +170,7 @@ function Home() {
 	function dropdown(e) {
 		return (
 			<div>
-				<select onChange={handleSelectChange} value={categories}>
+				<select onChange={handleSelectChange} value={displayTag}>
 					<option value="Select a Category"> -- Select a category -- </option>
 					<option value="all">All</option>
 
@@ -197,7 +208,7 @@ function Home() {
 					{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
 					{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
-					<button onClick={() => deleteItem(filteredItem.id)}>Delete</button>
+					<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
 					<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
 
 				</div>
