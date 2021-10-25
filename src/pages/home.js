@@ -12,6 +12,8 @@ function Home() {
 	const [categories, setCategories] = React.useState([])
 	const [tag, setTag] = React.useState('')
 	const [displayTag, setDisplayTag] = React.useState('all')
+	const [complete, setComplete] = React.useState([])
+
 
 	React.useEffect(() => { //Used to load to do list from localStorage
 		const temp = localStorage.getItem("dataList")
@@ -52,7 +54,7 @@ function Home() {
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
-		if(!categories.includes(newTodo.tag)){ //Adds new categories to categories array and make sure no duplicates
+		if (!categories.includes(newTodo.tag)) { //Adds new categories to categories array and make sure no duplicates
 			setCategories([...categories].concat(tag))
 		}
 		setCurrent('') //Reinitialize current to make sure no mix ups
@@ -62,36 +64,44 @@ function Home() {
 	//function to delete items from list
 	function deleteItem(id, tag) {
 		const updated = [...todo].filter((current) => current.id !== id)
-		const tempUpdated = [...todo]
 		const updatedCategory = [...categories]//.filter((current) => current !== tag)//Deletes category from list if there are no items with that category
 
-		if(updated.length < 1){
+		if (updated.length < 1) {
 			const first = updatedCategory.filter((current) => current !== tag) //makes sure deletion of categories when less than 1 item. Had this bug for a while...
 			setCategories(first)
 		}
-		else{
+		else {
 			updated.map((item) => { //deletes tag when there are no more items with said tag
-			if(tag !== item.tag){
-				console.log('item.tag')
-				const final = updatedCategory.filter((current) => current !== tag)
-				setCategories(final)		
-			}
-			return item
-		})
+				if (tag !== item.tag) {
+					console.log('item.tag')
+					const final = updatedCategory.filter((current) => current !== tag)
+					setCategories(final)
+				}
+				return item
+			})
 		}
 		setTodo(updated)
 	}
 
 	//function to toggle the complete status of items
 	function toggleComplete(id) {
+		const updatedComp = [...complete]
 		const updated = [...todo].map((current) => {
 			if (current.id === id) {
 				current.completed = !current.completed
+
+				if (current.completed === true) {
+					updatedComp.push(current)
+				}
+				else if (current.completed === false) {
+					updatedComp.filter((current) => current.id !== id) //here trying to delete create new var/const
+				}
 			}
 			return current
 		})
 
 		setTodo(updated)
+		setComplete(final)
 	}
 
 	//function to edit items in the list
@@ -154,7 +164,7 @@ function Home() {
 
 	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
-		
+
 
 
 
@@ -203,6 +213,8 @@ function Home() {
 			))}
 
 
+
+
 			{todo.filter(item => item.tag === displayTag).map(filteredItem => (
 				<div key={filteredItem.id} >
 					{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
@@ -213,8 +225,13 @@ function Home() {
 
 				</div>
 			))}
+
+			Complete
+			{complete.map((item) => <div> {item.text}</div>)}
+
 		</div >
-	)}
+	)
+}
 
 
-	export default Home
+export default Home
