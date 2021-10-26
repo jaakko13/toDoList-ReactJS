@@ -15,9 +15,9 @@ export const SideBarData = [
 		cName: 'nav-text'
 	},
 	{
-		title: 'Dev',
-		path: '/dev',
-		icon: <FaIcons.FaAnchor />,
+		title: 'Complete',
+		path: '/complete',
+		icon: <FaIcons.FaCheck />,
 		cName: 'nav-text'
 	},
 ]

@@ -33,6 +33,15 @@ function Home() {
 		}
 	}, [])
 
+	React.useEffect(() => { //Used to load complete list from localStorage
+		const temp = localStorage.getItem("completeList")
+		const parsed = JSON.parse(temp)
+
+		if (parsed) {
+			setComplete(parsed)
+		}
+	}, [])
+
 	React.useEffect(() => { //Used to save to do list to localStorage
 		const data = JSON.stringify(todo)
 		localStorage.setItem("dataList", data)
@@ -42,6 +51,11 @@ function Home() {
 		const tags = JSON.stringify(categories)
 		localStorage.setItem("categoryList", tags)
 	}, [categories])
+
+	React.useEffect(() => { //Used to save complete list to localStorage
+		const data = JSON.stringify(complete)
+		localStorage.setItem("completeList", data)
+	}, [complete])
 
 	function handleSubmit(e) {
 		e.preventDefault() //Prevents refresh on submission
@@ -85,24 +99,28 @@ function Home() {
 
 	//function to toggle the complete status of items
 	function toggleComplete(id) {
-		const updatedComp = [...complete]
-		const updated = [...todo].map((current) => {
+		var updatedComp = [...complete]
+		var updated = [...todo].map((current) => {
 			if (current.id === id) {
 				current.completed = !current.completed
 
-				if (current.completed === true) {
+				if (current.completed === true) { //adds completed item to complete list
 					updatedComp.push(current)
-				}
-				else if (current.completed === false) {
-					updatedComp.filter((current) => current.id !== id) //here trying to delete create new var/const
 				}
 			}
 			return current
 		})
 
+		updated.map((item) => {
+			if (item.completed === true) {
+				updated = updated.filter((current) => current.id !== id) //deletes completed item from todo list
+			}
+		})
 		setTodo(updated)
-		setComplete(final)
+		setComplete(updatedComp)
 	}
+
+	
 
 	//function to edit items in the list
 	function editItem(id) {
@@ -226,8 +244,8 @@ function Home() {
 				</div>
 			))}
 
-			Complete
-			{complete.map((item) => <div> {item.text}</div>)}
+			
+			
 
 		</div >
 	)
