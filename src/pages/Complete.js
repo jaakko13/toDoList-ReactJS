@@ -3,14 +3,7 @@ import React from 'react'
 function Complete() {
 
 	const [todo, setTodo] = React.useState([])
-	const [current, setCurrent] = React.useState('')
-	const [edit, setEdit] = React.useState(null)
-	const [editText, setEditText] = React.useState('')
-	const [reorder, setReorder] = React.useState(null)
-	const [reorderNumber, setReorderNumber] = React.useState(null)
 	const [categories, setCategories] = React.useState([])
-	const [tag, setTag] = React.useState('')
-	const [displayTag, setDisplayTag] = React.useState('all')
 	const [complete, setComplete] = React.useState([])
 
 	React.useEffect(() => { //Used to load to do list from localStorage
