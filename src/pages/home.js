@@ -13,6 +13,7 @@ function Home() {
 	const [tag, setTag] = React.useState('')
 	const [displayTag, setDisplayTag] = React.useState('all')
 	const [complete, setComplete] = React.useState([])
+	const [search, setSearch] = React.useState('')
 
 
 	React.useEffect(() => { //Used to load to do list from localStorage
@@ -64,7 +65,7 @@ function Home() {
 			id: new Date().getTime(),
 			text: current,
 			completed: false,
-			tag: tag
+			tag: tag,
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
@@ -182,17 +183,6 @@ function Home() {
 
 	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
-
-
-
-
-
-		// const temp = value.length <= categories.length;
-		// if(temp){
-		// // item is removed 
-		// }
-		// var arr = value.map((item) => item.value);
-		// setCategories(arr);
 	}
 
 	function dropdown(e) {
@@ -208,9 +198,71 @@ function Home() {
 		)
 	}
 
+	function display() {
+		if (search === '') {
+			return (
+				<div>
+					{todo.filter(item => displayTag === 'all').map(filteredItem => (
+						<div key={filteredItem.id}  >
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
+
+							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
+							<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
+
+						</div>
+					))}
+
+					{todo.filter(item => item.tag === displayTag).map(filteredItem => (
+						<div key={filteredItem.id} >
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
+
+							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
+							<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
+
+						</div>
+					))}
+				</div>
+			)
+		}
+		else {
+			return (
+				<div>
+					{filteredItems.map(item => {
+						return (
+							<div>
+								{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text, item.tag))}
+								{reorder === item.id ? (inputReorder(item.id)) : (<button onClick={() => setReorder(item.id)}>Reorder</button>)}
+
+								<button onClick={() => deleteItem(item.id, item.tag)}>Delete</button>
+								<input type='checkbox' onChange={() => toggleComplete(item.id)} checked={item.completed} />
+							</div>
+						)
+					})}
+				</div>
+			)
+		}
+	}
+
+	const handleChange = e => {
+		setSearch(e.target.value)
+	}
+
+	const filteredItems = todo.filter(item =>
+		item.text.toLowerCase().includes(search.toLowerCase())
+	)
+
 	return (
 		<div className="home">
 			<div className="input">
+				<div className='search'>
+					<h3>Search To-do Item</h3>
+					<form>
+						<input type='text' placeholder='Search' className='search-input' onChange={handleChange} />
+					</form>
+				</div>
+
 				{dropdown()}
 				<form onSubmit={handleSubmit}>
 					<input type="text" onChange={(e) => setCurrent(e.target.value)} value={current} placeholder='Text' />
@@ -219,31 +271,9 @@ function Home() {
 					<button type="submit">Add Item</button>
 				</form>
 
-				{todo.filter(item => displayTag === 'all').map(filteredItem => (
-					<div key={filteredItem.id}  >
-						{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
-						{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
-
-						<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
-						<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
-
-					</div>
-				))}
-
-				{todo.filter(item => item.tag === displayTag).map(filteredItem => (
-					<div key={filteredItem.id} >
-						{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
-						{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
-
-						<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
-						<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
-
-					</div>
-				))}
+				{display()}
 
 			</div>
-
-
 
 		</div >
 	)
