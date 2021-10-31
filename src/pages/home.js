@@ -14,7 +14,7 @@ function Home() {
 	const [displayTag, setDisplayTag] = React.useState('all')
 	const [complete, setComplete] = React.useState([])
 	const [search, setSearch] = React.useState('')
-
+	const [order, setOrder] = React.useState(false)
 
 	React.useEffect(() => { //Used to load to do list from localStorage
 		const temp = localStorage.getItem("dataList")
@@ -66,6 +66,8 @@ function Home() {
 			text: current,
 			completed: false,
 			tag: tag,
+			lastMod: new Date().getTime(),
+			displayDate: new Date().toLocaleString()
 		}
 
 		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
@@ -128,6 +130,7 @@ function Home() {
 		const updated = [...todo].map((item) => {
 			if (item.id === id) {
 				item.text = editText
+				item.lastMod = new Date().getTime()
 			}
 			return item
 		})
@@ -151,6 +154,8 @@ function Home() {
 		setReorderNumber(null)
 	}
 
+
+
 	//Conditional Rendering to show show change input field and confirm button only
 	function inputWithButton(id) {
 		return (
@@ -162,12 +167,16 @@ function Home() {
 	}
 
 	//Conditional Rendering to show show item text and edit button only
-	function textWithEdit(id, text, tag) {
+	function textWithEdit(id, text, tag, displayDate) {
 		return (
 			<div className="list">
-				{text}
-				<button onClick={() => setEdit(id)}>Edit</button>
-				{'Tag: ' + tag}
+				<div className="list">
+					{text}
+					<button onClick={() => setEdit(id)}>Edit</button>
+					{'Tag: ' + tag}
+
+				</div>
+				{'Last Modified: ' + displayDate}
 			</div>
 		);
 	}
@@ -199,12 +208,18 @@ function Home() {
 	}
 
 	function display() {
+		var list = todo
+
+		if (order === true) {
+			list = list.sort((a, b) => b.lastMod - a.lastMod);
+		}
+
 		if (search === '') {
 			return (
 				<div>
-					{todo.filter(item => displayTag === 'all').map(filteredItem => (
+					{list.filter(item => displayTag === 'all').map(filteredItem => (
 						<div key={filteredItem.id}  >
-							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag, filteredItem.displayDate))}
 							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
 							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
@@ -213,9 +228,9 @@ function Home() {
 						</div>
 					))}
 
-					{todo.filter(item => item.tag === displayTag).map(filteredItem => (
+					{list.filter(item => item.tag === displayTag).map(filteredItem => (
 						<div key={filteredItem.id} >
-							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag, filteredItem.displayDate))}
 							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
 							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
@@ -269,6 +284,7 @@ function Home() {
 					<input type="text" onChange={(e) => setTag(e.target.value)} value={tag} placeholder='Category' />
 
 					<button type="submit">Add Item</button>
+					<button type="button" onClick={() => setOrder(!order)}> Order by Last Modification</button>
 				</form>
 
 				{display()}
