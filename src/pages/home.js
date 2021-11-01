@@ -1,5 +1,6 @@
 import React from 'react'
 import './home.css';
+import axios from 'axios';
 
 
 function Home() {
@@ -14,15 +15,17 @@ function Home() {
 	const [displayTag, setDisplayTag] = React.useState('all')
 	const [complete, setComplete] = React.useState([])
 	const [search, setSearch] = React.useState('')
+	const [order, setOrder] = React.useState(false)
 
-
-	React.useEffect(() => { //Used to load to do list from localStorage
-		const temp = localStorage.getItem("dataList")
-		const parsed = JSON.parse(temp)
-
-		if (parsed) {
-			setTodo(parsed)
-		}
+	React.useEffect(() => {
+		axios.get('http://127.0.0.1:3010/tasks')
+			.then((resp) => {
+				setTodo(resp.data.concat(todo))
+			},
+				(error) => {
+					console.log(error)
+				}
+			)
 	}, [])
 
 	React.useEffect(() => { //Used to load categories list from localStorage
@@ -34,41 +37,30 @@ function Home() {
 		}
 	}, [])
 
-	React.useEffect(() => { //Used to load complete list from localStorage
-		const temp = localStorage.getItem("completeList")
-		const parsed = JSON.parse(temp)
-
-		if (parsed) {
-			setComplete(parsed)
-		}
-	}, [])
-
-	React.useEffect(() => { //Used to save to do list to localStorage
-		const data = JSON.stringify(todo)
-		localStorage.setItem("dataList", data)
-	}, [todo])
-
 	React.useEffect(() => { //Used to save categories list to localStorage
 		const tags = JSON.stringify(categories)
 		localStorage.setItem("categoryList", tags)
 	}, [categories])
 
-	React.useEffect(() => { //Used to save complete list to localStorage
-		const data = JSON.stringify(complete)
-		localStorage.setItem("completeList", data)
-	}, [complete])
-
 	function handleSubmit(e) {
-		e.preventDefault() //Prevents refresh on submission
 
-		const newTodo = {
+		const newTodo = { //template for each task created
 			id: new Date().getTime(),
 			text: current,
 			completed: false,
 			tag: tag,
+			lastMod: new Date().getTime(),
+			displayDate: new Date().toLocaleString()
 		}
 
-		setTodo([...todo].concat(newTodo)) //Adds new todo to Todos Array
+		fetch('http://127.0.0.1:3010/tasks', { //Used to POST new tasks to db
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ id: newTodo.id, text: newTodo.text, completed: newTodo.completed, tag: newTodo.tag, lastMod: newTodo.lastMod, displayDate: newTodo.displayDate })
+		}).then((resp) => resp.json())
+			.then((data) => { console.log(data) });
+
+
 		if (!categories.includes(newTodo.tag)) { //Adds new categories to categories array and make sure no duplicates
 			setCategories([...categories].concat(tag))
 		}
@@ -78,8 +70,8 @@ function Home() {
 
 	//function to delete items from list
 	function deleteItem(id, tag) {
-		const updated = [...todo].filter((current) => current.id !== id)
-		const updatedCategory = [...categories]//.filter((current) => current !== tag)//Deletes category from list if there are no items with that category
+		const updated = [...todo].filter((current) => current.id !== id) //used for category purposes
+		const updatedCategory = [...categories]
 
 		if (updated.length < 1) {
 			const first = updatedCategory.filter((current) => current !== tag) //makes sure deletion of categories when less than 1 item. Had this bug for a while...
@@ -95,7 +87,11 @@ function Home() {
 				return item
 			})
 		}
-		setTodo(updated)
+		fetch(`http://127.0.0.1:3010/tasks/${id}`, { //deletes item from db 
+			method: 'DELETE'
+		})
+		window.location.reload()
+
 	}
 
 	//function to toggle the complete status of items
@@ -103,10 +99,17 @@ function Home() {
 		var updatedComp = [...complete]
 		var updated = [...todo].map((current) => {
 			if (current.id === id) {
-				current.completed = !current.completed
+				current.completed = !current.completed //completes checkmark
 
 				if (current.completed === true) { //adds completed item to complete list
-					updatedComp.push(current)
+					fetch('http://127.0.0.1:3010/completed', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ id: current.id, text: current.text, completed: current.completed, tag: current.tag, lastMod: current.lastMod, displayDate: current.displayDate })
+					}).then((resp) => resp.json())
+						.then((data) => { console.log(data) });
+
+					window.location.reload()
 				}
 			}
 			return current
@@ -114,24 +117,30 @@ function Home() {
 
 		updated.map((item) => {
 			if (item.completed === true) {
-				updated = updated.filter((current) => current.id !== id) //deletes completed item from todo list
+				fetch(`http://127.0.0.1:3010/tasks/${id}`, { //deletes completed item from todo list
+
+					method: 'DELETE'
+				})
+				window.location.reload()
 			}
 		})
-		setTodo(updated)
-		setComplete(updatedComp)
 	}
-
-
 
 	//function to edit items in the list
 	function editItem(id) {
-		const updated = [...todo].map((item) => {
+		[...todo].map((item) => {
 			if (item.id === id) {
-				item.text = editText
+				fetch(`http://127.0.0.1:3010/tasks/${id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: item.id, text: editText, completed: item.completed, tag: item.tag, lastMod: new Date().getTime(), displayDate: new Date().toLocaleString() })
+				}).then((resp) => resp.json())
+					.then((data) => { console.log(data) });
+				window.location.reload()
+
 			}
 			return item
 		})
-		setTodo(updated)
 		setEdit(null)
 		setEditText('')
 	}
@@ -151,6 +160,8 @@ function Home() {
 		setReorderNumber(null)
 	}
 
+
+
 	//Conditional Rendering to show show change input field and confirm button only
 	function inputWithButton(id) {
 		return (
@@ -162,16 +173,21 @@ function Home() {
 	}
 
 	//Conditional Rendering to show show item text and edit button only
-	function textWithEdit(id, text, tag) {
+	function textWithEdit(id, text, tag, displayDate) {
 		return (
 			<div className="list">
-				{text}
-				<button onClick={() => setEdit(id)}>Edit</button>
-				{'Tag: ' + tag}
+				<div className="list">
+					{text}
+					<button onClick={() => setEdit(id)}>Edit</button>
+					{'Tag: ' + tag}
+
+				</div>
+				{'Last Modified: ' + displayDate}
 			</div>
 		);
 	}
 
+	//displays reordering field and button to reorder items
 	function inputReorder(id) {
 		return (
 			<div>
@@ -181,10 +197,12 @@ function Home() {
 		);
 	}
 
+	//change from dropdown to change categories
 	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
 	}
 
+	//dropdown menu for all categories
 	function dropdown(e) {
 		return (
 			<div>
@@ -198,13 +216,21 @@ function Home() {
 		)
 	}
 
+
+	//displays list of todo items. All conditional rendering functions inside. Makes sure correct items are shown if using search or categories or nothing.
 	function display() {
+		var list = todo
+
+		if (order === true) {
+			list = list.sort((a, b) => b.lastMod - a.lastMod);
+		}
+
 		if (search === '') {
 			return (
 				<div>
-					{todo.filter(item => displayTag === 'all').map(filteredItem => (
+					{list.filter(item => displayTag === 'all').map(filteredItem => (
 						<div key={filteredItem.id}  >
-							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag, filteredItem.displayDate))}
 							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
 							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
@@ -213,9 +239,9 @@ function Home() {
 						</div>
 					))}
 
-					{todo.filter(item => item.tag === displayTag).map(filteredItem => (
+					{list.filter(item => item.tag === displayTag).map(filteredItem => (
 						<div key={filteredItem.id} >
-							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag))}
+							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag, filteredItem.displayDate))}
 							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
 
 							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
@@ -232,7 +258,7 @@ function Home() {
 					{filteredItems.map(item => {
 						return (
 							<div>
-								{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text, item.tag))}
+								{edit === item.id ? (inputWithButton(item.id)) : (textWithEdit(item.id, item.text, item.tag, item.displayDate))}
 								{reorder === item.id ? (inputReorder(item.id)) : (<button onClick={() => setReorder(item.id)}>Reorder</button>)}
 
 								<button onClick={() => deleteItem(item.id, item.tag)}>Delete</button>
@@ -245,10 +271,12 @@ function Home() {
 		}
 	}
 
+	//changes search value
 	const handleChange = e => {
 		setSearch(e.target.value)
 	}
 
+	//list of items that are searched
 	const filteredItems = todo.filter(item =>
 		item.text.toLowerCase().includes(search.toLowerCase())
 	)
@@ -269,6 +297,7 @@ function Home() {
 					<input type="text" onChange={(e) => setTag(e.target.value)} value={tag} placeholder='Category' />
 
 					<button type="submit">Add Item</button>
+					<button type="button" onClick={() => setOrder(!order)}> Order by Last Modification</button>
 				</form>
 
 				{display()}
