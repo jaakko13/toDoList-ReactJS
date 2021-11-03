@@ -2,7 +2,6 @@ import React from 'react'
 import './home.css';
 import axios from 'axios';
 
-
 function Home() {
 	const [todo, setTodo] = React.useState([])
 	const [current, setCurrent] = React.useState('')
@@ -16,6 +15,8 @@ function Home() {
 	const [complete, setComplete] = React.useState([])
 	const [search, setSearch] = React.useState('')
 	const [order, setOrder] = React.useState(false)
+	const [dates, setDates] = React.useState(null)
+	const [alarmDate, setAlarmDate] = React.useState('')
 
 	React.useEffect(() => {
 		axios.get('http://127.0.0.1:3010/tasks')
@@ -42,21 +43,34 @@ function Home() {
 		localStorage.setItem("categoryList", tags)
 	}, [categories])
 
+	React.useEffect(() => {
+
+		const interval = setInterval(() => {
+			//setAlarmDate(dates)
+			setAlarm(dates)
+			console.log('useEffect ran')
+			console.log('alarmDateUSe' + alarmDate)
+
+		}, 30000);
+		return () => clearInterval(interval);
+	})
+
 	function handleSubmit(e) {
 
 		const newTodo = { //template for each task created
-			id: new Date().getTime(),
 			text: current,
 			completed: false,
 			tag: tag,
 			lastMod: new Date().getTime(),
-			displayDate: new Date().toLocaleString()
+			displayDate: new Date().toLocaleString(),
+			outOfTime: false,
+			alarm: '',
 		}
 
 		fetch('http://127.0.0.1:3010/tasks', { //Used to POST new tasks to db
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id: newTodo.id, text: newTodo.text, completed: newTodo.completed, tag: newTodo.tag, lastMod: newTodo.lastMod, displayDate: newTodo.displayDate })
+			body: JSON.stringify({ text: newTodo.text, completed: newTodo.completed, tag: newTodo.tag, lastMod: newTodo.lastMod, displayDate: newTodo.displayDate, outOfTime: newTodo.outOfTime, alarm: newTodo.alarm })
 		}).then((resp) => resp.json())
 			.then((data) => { console.log(data) });
 
@@ -197,6 +211,106 @@ function Home() {
 		);
 	}
 
+	function inputDate(id) {
+		return (
+			<div>
+				<input min={new Date().toISOString().slice(0, -8)} type='datetime-local' onChange={(e) => setAlarmDate(e.target.value)} value={alarmDate} />
+				<button onClick={() => {
+					alert("Alarm Set!")
+					setAlarm(dates)}}>Enter Alarm Date</button>
+			</div>
+		)
+	}
+
+	function setAlarm(id) {
+		if (alarmDate === null) {
+			return
+		}
+
+
+		todo.map((item) => {
+			if (item.id === id) {
+				fetch(`http://127.0.0.1:3010/tasks/${id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: new Date().getTime(), displayDate: new Date().toLocaleString(), outOfTime: false, alarm: alarmDate })
+				}).then((resp) => resp.json())
+					.then((data) => { console.log(data) });
+
+			}
+			return item
+		})
+
+
+
+		const now = new Date()
+		const date = [now.getFullYear(), now.getMonth() + 1, now.getDay(), now.getHours(), now.getMinutes()] //+1 because month starts from 0
+
+		console.log('date:' + date[0] + ', ' + date[1] + ', ' + date[2] + ', ' + date[3] + ', ' + date[4])
+		console.log(now)
+
+		const year = alarmDate.substring(0, 4)
+		const month = alarmDate.substring(5, 7)
+		const day = alarmDate.substring(8, 10)
+		const hour = alarmDate.substring(11, 13)
+		const minute = alarmDate.substring(14, 16)
+
+		const formattedAlarm = [parseInt(year, 10), parseInt(month, 10), parseInt(day, 10), parseInt(hour, 10), parseInt(minute, 10),]
+
+		console.log('formattedAlarm:' + formattedAlarm[0] + ',' + formattedAlarm[1] + ',' + formattedAlarm[2] + ',' + formattedAlarm[3] + ',' + formattedAlarm[4])
+
+		todo.map((item) => {
+			if (item.id === id) {
+				if (date[0] > formattedAlarm[0]) {
+					timer(id)
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+
+				}
+				else if (date[0] >= formattedAlarm[0] && date[1] > formattedAlarm[1]) {
+					timer(id)
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+
+				}
+				else if (date[0] >= formattedAlarm[0] && date[1] >= formattedAlarm[1] && date[2] > formattedAlarm[2]) {
+					timer(id)
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+
+				}
+				else if (date[0] >= formattedAlarm[0] && date[1] >= formattedAlarm[1] && date[2] >= formattedAlarm[2] && date[3] > formattedAlarm[3]) {
+					timer(id)
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+
+				}
+				else if (date[0] >= formattedAlarm[0] && date[1] >= formattedAlarm[1] && date[2] >= formattedAlarm[2] && date[3] >= formattedAlarm[3] && date[4] >= formattedAlarm[4]) {
+					timer(id)
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+
+				}
+				if (item.outOfTime === true) {
+					alert(`You ran out of time on item: ${item.text} Tag: ${item.tag}`)
+				}
+			}
+		})
+	}
+
+	function timer(id) {
+		[...todo].map((item) => {
+			if (item.id === id) {
+				fetch(`http://127.0.0.1:3010/tasks/${id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: new Date().getTime(), displayDate: new Date().toLocaleString(), outOfTime: true, alarm: item.alarm })
+				}).then((resp) => resp.json())
+					.then((data) => { console.log(data) });
+				window.location.reload()
+
+			}
+			return item
+		})
+	}
+
+
+
 	//change from dropdown to change categories
 	function handleSelectChange(e, value) {
 		setDisplayTag(e.target.value)
@@ -232,6 +346,7 @@ function Home() {
 						<div key={filteredItem.id}  >
 							{edit === filteredItem.id ? (inputWithButton(filteredItem.id)) : (textWithEdit(filteredItem.id, filteredItem.text, filteredItem.tag, filteredItem.displayDate))}
 							{reorder === filteredItem.id ? (inputReorder(filteredItem.id)) : (<button onClick={() => setReorder(filteredItem.id)}>Reorder</button>)}
+							{dates === filteredItem.id ? (inputDate(filteredItem.id)) : (<button onClick={() => setDates(filteredItem.id)}>Set Alarm</button>)}
 
 							<button onClick={() => deleteItem(filteredItem.id, filteredItem.tag)}>Delete</button>
 							<input type='checkbox' onChange={() => toggleComplete(filteredItem.id)} checked={filteredItem.completed} />
