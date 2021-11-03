@@ -46,7 +46,7 @@ function Complete() {
 				fetch('http://127.0.0.1:3010/tasks', {//adds item back into todo list
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: item.lastMod, displayDate: item.displayDate })
+					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: item.lastMod, displayDate: item.displayDate, outOfTime: item.outOfTime, alarm: item.alarm })
 				}).then((resp) => resp.json())
 					.then((data) => { console.log(data) });
 

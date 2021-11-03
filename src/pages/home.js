@@ -46,7 +46,6 @@ function Home() {
 	React.useEffect(() => {
 
 		const interval = setInterval(() => {
-			//setAlarmDate(dates)
 			setAlarm(dates)
 			console.log('useEffect ran')
 			console.log('alarmDateUSe' + alarmDate)
@@ -119,7 +118,7 @@ function Home() {
 					fetch('http://127.0.0.1:3010/completed', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ id: current.id, text: current.text, completed: current.completed, tag: current.tag, lastMod: current.lastMod, displayDate: current.displayDate })
+						body: JSON.stringify({ id: current.id, text: current.text, completed: current.completed, tag: current.tag, lastMod: current.lastMod, displayDate: current.displayDate, outOfTime: current.outOfTime, alarm: current.alarm })
 					}).then((resp) => resp.json())
 						.then((data) => { console.log(data) });
 
@@ -147,7 +146,7 @@ function Home() {
 				fetch(`http://127.0.0.1:3010/tasks/${id}`, {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ id: item.id, text: editText, completed: item.completed, tag: item.tag, lastMod: new Date().getTime(), displayDate: new Date().toLocaleString() })
+					body: JSON.stringify({ id: item.id, text: editText, completed: item.completed, tag: item.tag, lastMod: new Date().getTime(), displayDate: new Date().toLocaleString(), outOfTime: item.outOfTime, alarm: item.alarm })
 				}).then((resp) => resp.json())
 					.then((data) => { console.log(data) });
 				window.location.reload()
