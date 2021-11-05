@@ -57,6 +57,7 @@ function Home() {
 	function handleSubmit(e) {
 
 		const newTodo = { //template for each task created
+			id: new Date().getTime(), //own id to avoid duplicate ids between todo and completed lists
 			text: current,
 			completed: false,
 			tag: tag,
@@ -69,7 +70,7 @@ function Home() {
 		fetch('http://127.0.0.1:3010/tasks', { //Used to POST new tasks to db
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ text: newTodo.text, completed: newTodo.completed, tag: newTodo.tag, lastMod: newTodo.lastMod, displayDate: newTodo.displayDate, outOfTime: newTodo.outOfTime, alarm: newTodo.alarm })
+			body: JSON.stringify({ id: newTodo.id, text: newTodo.text, completed: newTodo.completed, tag: newTodo.tag, lastMod: newTodo.lastMod, displayDate: newTodo.displayDate, outOfTime: newTodo.outOfTime, alarm: newTodo.alarm })
 		}).then((resp) => resp.json())
 			.then((data) => { console.log(data) });
 

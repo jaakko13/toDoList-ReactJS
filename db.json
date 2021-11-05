@@ -1,15 +1,4 @@
 {
-  "tasks": [
-    {
-      "text": "",
-      "completed": false,
-      "tag": "",
-      "lastMod": 1635972213921,
-      "displayDate": "11/3/2021, 10:43:33 PM",
-      "outOfTime": false,
-      "alarm": "",
-      "id": 1
-    }
-  ],
+  "tasks": [],
   "completed": []
 }

@@ -2,6 +2,9 @@
 	text-align: center;
 	flex-direction: column;
 	display: flex;
+	background-color: #e69871;
+	height: 100vh;
+
 }
 .list {
 	text-align: center;

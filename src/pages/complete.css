@@ -1,0 +1,10 @@
+.complete{
+    flex-direction: column;
+    padding-bottom: 25px;
+    padding-left: 10px;
+}
+
+.ting {
+    background-color: #e69871;
+	height: 100vh;
+}
