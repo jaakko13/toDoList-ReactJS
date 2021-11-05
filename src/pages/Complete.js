@@ -1,5 +1,7 @@
 import React from 'react'
 import axios from 'axios'
+import './complete.css';
+
 
 function Complete() {
 
@@ -46,7 +48,7 @@ function Complete() {
 				fetch('http://127.0.0.1:3010/tasks', {//adds item back into todo list
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: item.lastMod, displayDate: item.displayDate })
+					body: JSON.stringify({ id: item.id, text: item.text, completed: item.completed, tag: item.tag, lastMod: item.lastMod, displayDate: item.displayDate, outOfTime: item.outOfTime, alarm: item.alarm })
 				}).then((resp) => resp.json())
 					.then((data) => { console.log(data) });
 
@@ -89,13 +91,18 @@ function Complete() {
 	}
 
 	return (
-		<div>
-			Complete
+		<div className='ting'>
+			<h3>List of Completed Items</h3>
 			{complete.map((item) => (
-				<div>
-					{item.text}
-					<button onClick={() => deleteItem(item.id, item.tag)}>Delete</button>
-					<input type='checkbox' onChange={() => backwardsComplete(item.id)} checked={item.completed} />
+				<div className='complete'>
+					<div>
+						{item.text}
+						{` Tag: ` + item.tag}
+					</div>
+					<div>
+						<button onClick={() => deleteItem(item.id, item.tag)}>Delete</button>
+						<input type='checkbox' onChange={() => backwardsComplete(item.id)} checked={item.completed} />
+					</div>
 				</div>
 			))}
 		</div>

@@ -1,8 +1,10 @@
 import React from 'react'
+import './info.css';
+
 
 function Info() {
 	return (
-		<div>
+		<div className='info'>
 			<h3>Author:</h3>
 			<p>Jaakko Virtanen</p>
 
@@ -23,7 +25,9 @@ function Info() {
 				<br></br>
 				button which deletes the item, and the checkbox which completes the item and moves it to the complete list which can be found from the menu
 				<br></br>
-				at the top left of the page. 
+				at the top left of the page. From the complete list the user is able to delete items for good or uncheck them which sends the items back to
+				<br></br>
+				the main page.
 			</p>
 
 			<h3>Licenses/Permissions:</h3>
